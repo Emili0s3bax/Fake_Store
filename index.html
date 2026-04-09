@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luxury Fragrance | Boutique</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #1a1a1a;
+            --accent: #d4af37; /* Dorado elegante */
+            --bg: #fdfdfd;
+            --text-light: #888;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg);
+            color: var(--primary);
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Header y Navegación */
+        header {
+            background: white;
+            padding: 60px 20px 30px;
+            text-align: center;
+            border-bottom: 1px solid #f0f0f0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            letter-spacing: 8px;
+            margin: 0 0 30px 0;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .categories {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        .categories button {
+            background: none;
+            border: none;
+            font-family: 'Poppins', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            padding: 10px 0;
+            color: var(--text-light);
+            transition: 0.3s;
+            border-bottom: 2px solid transparent;
+        }
+
+        .categories button:hover, .categories button.active {
+            color: var(--primary);
+            border-bottom: 2px solid var(--accent);
+        }
+
+        /* Grid de Productos */
+        main {
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 0 20px;
+        }
+
+        #producto {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 40px;
+        }
+
+        /* Tarjeta de Perfume */
+        .card {
+            background: white;
+            transition: 0.4s;
+            text-align: center;
+            padding-bottom: 20px;
+            border: 1px solid transparent;
+        }
+
+        .card:hover {
+            border: 1px solid #f0f0f0;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.02);
+        }
+
+        .img-container {
+            overflow: hidden;
+            background: #f9f9f9;
+            margin-bottom: 20px;
+            height: 350px;
+        }
+
+        .card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: 0.8s;
+        }
+
+        .card:hover img {
+            transform: scale(1.08);
+        }
+
+        .card h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.1rem;
+            margin: 15px 0 5px 0;
+            font-weight: 400;
+            color: #222;
+        }
+
+        .price {
+            font-weight: 400;
+            color: var(--accent);
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+        }
+
+        .btn-detail {
+            background: none;
+            border: 1px solid var(--primary);
+            padding: 10px 25px;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-detail:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        footer {
+            text-align: center;
+            padding: 80px 20px;
+            color: #bbb;
+            font-size: 0.7rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1 class="logo">Luxury Fragrance</h1>
+        <nav class="categories">
+            <button class="active" onclick="filtrar('todos', this)">Todos</button>
+            <button onclick="filtrar('hombre', this)">Hombre</button>
+            <button onclick="filtrar('mujer', this)">Mujer</button>
+            <button onclick="filtrar('unisex', this)">Unisex</button>
+        </nav>
+    </header>
+
+    <main>
+        <div id="producto">
+            </div>
+    </main>
+
+    <footer>
+        &copy; 2026 Luxury Fragrance Boutique | Sistemas UIDE
+    </footer>
+
+    <script>
+        const API_URL = "http://127.0.0.1:8000/api/products/";
+        let db_productos = [];
+
+        // 1. Obtener productos de tu FastAPI
+        fetch(API_URL)
+            .then(res => res.json())
+            .then(data => {
+                db_productos = data;
+                renderizar(db_productos);
+            })
+            .catch(err => {
+                console.error("Error conectando a la API:", err);
+                document.getElementById("producto").innerHTML = "<p>Error al cargar el catálogo.</p>";
+            });
+
+        // 2. Función para mostrar productos en el Grid
+        function renderizar(lista) {
+            const container = document.getElementById("producto");
+            container.innerHTML = "";
+
+            lista.forEach(p => {
+                // Limpiamos la ruta de la imagen
+                let imgPath = p.images.startsWith('/') ? p.images.substring(1) : p.images;
+
+                const card = document.createElement("div");
+                card.className = "card";
+                card.innerHTML = `
+                    <div class="img-container">
+                        <img src="${imgPath}" alt="${p.title}">
+                    </div>
+                    <h2>${p.title}</h2>
+                    <p class="price">$${p.price.toFixed(2)}</p>
+                    <button class="btn-detail" onclick="irAlDetalle(${p.id})">Descubrir aroma</button>
+                `;
+                
+                container.appendChild(card);
+            });
+        }
+
+        // 3. Función de redirección
+        function irAlDetalle(id) {
+            window.location.href = `detalle.html?id=${id}`;
+        }
+
+        // 4. Lógica de filtrado por categoría
+        function filtrar(categoria, boton) {
+            // Actualizar botones (clase active)
+            document.querySelectorAll('.categories button').forEach(b => b.classList.remove('active'));
+            boton.classList.add('active');
+
+            if (categoria === 'todos') {
+                renderizar(db_productos);
+            } else {
+                /* MAPEADO DE CATEGORÍAS:
+                   Asegúrate de que en tu base de datos:
+                   - Hombre sea category_id: 1
+                   - Mujer sea category_id: 2
+                   - Unisex sea category_id: 3
+                */
+                const ids = { 'hombre': 1, 'mujer': 2, 'unisex': 3 };
+                const filtrados = db_productos.filter(p => p.category_id === ids[categoria]);
+                renderizar(filtrados);
+            }
+        }
+    </script>
+</body>
+</html>
